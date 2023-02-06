@@ -1,5 +1,7 @@
-# Specify filepatterns or speficiy file names you want git to ignore
+# Specify filepatterns or specify file names you want git to ignore
 **/.idea
 /.idea
 /.idea/workspace.xml
 .DS_store
+misc.xml
+ProfHurst_PHYS240_SP23.iml
