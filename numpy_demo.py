@@ -14,8 +14,9 @@ if __name__ == '__main__':
     bt = np.transpose(b)  # row vector that is the transpoe of b
 
     # define some matrices
-    # A = np.array([[1.0, 0., 1.], [0., 1., -1.], [1., 2., 0]])
-    # B = np.array([[0., 1., 1.], [2., 3., -1.], [0., 0., 1]])
+    A = np.array([[1.0, 0., 1.], [0., 1., -1.], [1., 2., 0]])
+    B = np.array([[0., 1., 1.], [2., 3., -1.], [0., 0., 1]])
+
     # large zero array
     big_array = np.zeros((4, 256, 64, 1024), dtype=float)
     big_array_slice = big_array[:, :, 0, 1] # take all elements in the first 2 dimensions corresponding to the 0 and 1 element of dimensions 3 and 4
