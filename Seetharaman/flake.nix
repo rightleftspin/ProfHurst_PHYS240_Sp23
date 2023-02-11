@@ -26,6 +26,7 @@
 	  scipy
           matplotlib
 	  sympy
+	  gmpy2
         '';
       });
     };
