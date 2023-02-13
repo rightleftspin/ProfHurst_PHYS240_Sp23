@@ -20,10 +20,10 @@ area = 4.3e-3  # Cross-sectional area of projectile (m^2)
 mass = 0.145   # Mass of projectile (kg)
 grav = 9.81    # Gravitational acceleration (m/s^2)
 
-# Set air resistance
-airResistance = False
-if airResistance:
-    rho = 0       # No air resistance
+# Set air resistance flag
+airFlag = eval(input('Add air resistance? (Yes: 1 No: 0)'))
+if airFlag == 0:
+    rho = 0.       # No air resistance
     air_text = '(no air)'
 else:
     rho = 1.2     # Density of air (kg/m^3)
@@ -31,25 +31,58 @@ else:
 air_const = -0.5*Cd*rho*area/mass   # Air resistance constant
 
 # * Loop until ball hits ground or max steps completed
-tmax, dt = eval(input('Enter time interval and timestep:  tmax, dt (sec): '))  # (sec)
-t = np.arange(0, tmax + dt, dt)  # time vector will extend up to tmax
-maxstep = len(t)  # maximum number of steps; should be tmax/dt+1
+tau = eval(input('Enter timestep dt in seconds: '))  # (sec)
+maxstep = 1000
+laststep = maxstep
 
+# Set up arrays for data
 xplot = np.empty(maxstep)
 yplot = np.empty(maxstep)
 
-xNoAir = np.empty(maxstep)
-yNoAir = np.empty(maxstep)
+x_noAir = np.empty(maxstep)
+y_noAir = np.empty(maxstep)
 
-# analytical solution with no air:
-x_analytic = r0[0] + v0[0]*t
-y_analytic = r0[1] + v0[1]*t - 0.5*grav*t**2
+for istep in range(maxstep):
+    t = istep * tau  # Current time
 
-#######
-# Add functionality to include air resistance.
-#######
+    # Record computed position for plotting
+    xplot[istep] = r[0]
+    yplot[istep] = r[1]
 
+    x_noAir[istep] = r0[0] + v0[0]*t
+    y_noAir[istep] = r0[1] + v0[1]*t - 0.5*grav*t**2
+
+    # Calculate the acceleration of the ball
+    accel = air_const * np.linalg.norm(v) * v  # Air resistance
+    accel[1] = accel[1] - grav # update y acceleration to include gravity
+
+    # Calculate the new position and velocity using Euler's method.
+    r = r + tau * v  # Euler step
+    v = v + tau * accel
+
+    # If the ball reaches the ground (i.e. y < 0), break out of the loop
+    if r[1] < 0:
+        laststep = istep + 1
+        xplot[laststep] = r[0]  # Record last values completed
+        yplot[laststep] = r[1]
+
+        # x_noAir[laststep] = r0[0] + v0[0] * t
+        # y_noAir[laststep] = r0[1] + v0[1] * t - 0.5 * grav * t ** 2
+        break  # Break out of the for loop
+
+# Print maximum range and time of flight
+print('Maximum range is {0:.2f} meters'.format(r[0]))
+print('Time of flight is {0:.1f} seconds'.format(laststep * tau))
+
+# Graph the trajectory of the baseball
 fig, ax = plt.subplots()
-ax.plot(x_analytic, y_analytic, '--', c='C2', label='analytic (no air)')
+ax.set_title('Projectile Motion: ' + air_text)
+ax.plot(x_noAir[:laststep], y_noAir[:laststep], '-', c='C2', label='Theory (no air)')
+ax.plot(xplot[:laststep+1], yplot[:laststep+1], '+', label='Euler method')
+# Mark the location of the ground by a straight line
+ax.plot(np.array([0.0, x_noAir[laststep-1]]), np.array([0.0, 0.0]), '-', color='k')
+ax.legend(frameon=False)
+ax.set_xlabel('Range (m)')
+ax.set_ylabel('Height (m)')
 
 plt.show()
