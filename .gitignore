@@ -1,6 +1,6 @@
-# Specify filepatterns or speficiy file names you want git to ignore
+# Specify filepatterns or specify file names you want git to ignore
 **/.idea
 /.idea
 /.idea/workspace.xml
 .DS_store
-Seetharaman/.direnv/
+
