@@ -76,5 +76,5 @@ print("-"*100)
 
 double_fac_avag = double_factorial_stirlings_sci(602e21)
 print("Could not get more precision than this:")
-print(f"Sterling's Approx: {6.02 * (10 ** 23):.3E}!! = {10 ** double_fac_avag[0]:.3f}E+{double_fac_avag[1]:.3E}")
+print(f"Stirling's Approx: {6.02 * (10 ** 23):.3E}!! = {10 ** double_fac_avag[0]:.3f}E+{double_fac_avag[1]:.3E}")
 print("-"*100)
