@@ -21,7 +21,7 @@ def rka(x, t, tau, err, derivsRK, param):
     # Set initial variables
     tSave, xSave = t, x  # Save initial values
     safe1, safe2 = 0.9, 4.0  # Safety factors for bounds on tau (hard-coded)
-    eps = 1.0E-15
+    eps = 1.0e-15
 
     # Loop over maximum number of attempts to satisfy error bound
     xTemp = np.empty(len(x))
@@ -39,7 +39,7 @@ def rka(x, t, tau, err, derivsRK, param):
 
         # Take the one big time step
         t = tSave + tau
-        xBig = rk4(xSave, tSave, half_tau, derivsRK, param)
+        xBig = rk4(xSave, tSave, tau, derivsRK, param)
 
         # Compute the estimated truncation error
         scale = err * 0.5 * (abs(xSmall) + abs(xBig))
