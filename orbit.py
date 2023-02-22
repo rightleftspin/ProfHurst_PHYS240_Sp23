@@ -90,7 +90,7 @@ for iStep in tqdm(range(nStep)):
 # Graph the trajectory  and energy of the comet over time.
 totalE = kinetic + potential  # total energy
 
-fig = plt.figure(figsize=(10.0, 6.5))
+fig = plt.figure(figsize=(10.0, 5.25))
 ax = fig.add_subplot(121, polar=True)
 ax.plot(thplot, rplot, '+',)
 ax.set_title('Distance (AU)')
