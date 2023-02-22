@@ -42,7 +42,7 @@ def rka(x, t, tau, err, derivsRK, param):
         xBig = rk4(xSave, tSave, tau, derivsRK, param)
 
         # Compute the estimated truncation error
-        scale = err * 0.5 * (abs(xSmall) + abs(xBig))
+        scale = err * 0.5 * (abs(xSmall) + abs(xBig))  # Error times the average of the two quantities
         xDiff = xSmall - xBig
         errorRatio = np.max(np.absolute(xDiff) / (scale + eps))
 
