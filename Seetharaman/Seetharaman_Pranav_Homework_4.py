@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import sys
 
 from nm4p.rk4 import rk4
 from nm4p.rka import rka
@@ -15,35 +16,36 @@ def gravrk(s, t, gkml_array):
     :param GM: Parameter G*M - gravitational constant * solar mass Units [AU^3/yr^2]
     :return: deriv: Derivatives [dr(0/dt), dr(1)/dt, dv(0)/dt, dv(1)/dt]
     """
+    g, k, m, l = gkml_array
+
     # Compute acceleration
     r = s[:2]  # Unravel the vector s into position and velocity
     v = s[2:]
-    accel = [(r[0] + gkml_array[3]) * (v[1] ** 2) + gkml_array[0] * np.cos(r[1]) - (gkml_array[1] / gkml_array[2]) * r[0],
-             ((-2 * v[0] * v[1]) / (r[0] + gkml_array[3])) - ((gkml_array[0] / (r[0] + gkml_array[3])) * np.sin(r[1]))]
+    accel = [((r[0] + l) * (v[1] ** 2)) - ((k * r[0]) / m) + (g * np.cos(r[1])), 
+             ((-g * np.sin(r[1])) / (l + r[0])) - ((2 * v[0] * v[1]) / (l + r[0]))]
 
     # Return derivatives
     deriv = np.array([v[0], v[1], accel[0], accel[1]])
 
     return deriv
 
-mass = .1  # Mass of pendulum bob
-grav = 9.8
-spring = 100 # Strength of the spring
+mass = 1  # Mass of pendulum bob
+grav = 9.81
+spring = 1000 # Strength of the spring
 length = 1 # Resting length of the pendulum
 adaptErr = 1.0E-3  # Error parameter used by adaptive Runge-Kutta
 time = 0.0
 
-# Set initial position and velocity of the comet.
-theta0 = eval(input('Enter initial angle (deg): '))
-r = np.array([length, theta0 * np.pi / 180])
+theta0 = eval(sys.argv[1])
+total_time = eval(sys.argv[2]) # in sec
+tau = eval(sys.argv[3])
+
+nStep = int(total_time // tau)
+
+r = np.array([0, theta0 * np.pi / 180])
 v = np.array([0.0, 0.0])
 
 state = np.array([r[0], r[1], v[0], v[1]])  # State used by R-K routines
-
-
-# Loop over the desired number of steps using the specified numerical method.
-nStep = eval(input('Enter number of iterations: '))
-tau = eval(input('Enter time step (sec): '))
 
 rplot = np.empty(nStep)
 thplot = np.empty(nStep)
@@ -62,22 +64,20 @@ for iStep in tqdm(range(nStep)):
     r = state[:2]  # 4th Order Runge-Kutta
     v = state[2:]
 
-#rplot = rplot + length
+plt.plot(tplot, rplot, label = "Radius")
+plt.plot(tplot, thplot, label = "Angle")
+plt.ylabel('Angle (rad) and Radius (m)')
+plt.xlabel('Time')
+plt.legend()
 
-fig = plt.figure(figsize=(10.0, 5.25))
-ax = fig.add_subplot(121, polar=True)
-ax.plot(thplot, rplot, '+',)
-ax.set_title('Distance from Center (m)')
-ax.grid(True)
-fig.tight_layout(pad=5.0)
+plt.savefig("tt_plot.pdf")
+plt.close()
 
-ax2 = fig.add_subplot(122)
-#ax2.plot(rplot * np.sin(thplot), -rplot * np.cos(thplot))
-ax2.plot(tplot, rplot, label = "Rho (m)")
-ax2.plot(tplot, thplot, label = "Theta (rad)")
-ax2.set_xlabel('Time (sec)')
-ax2.set_ylabel('')
-ax2.legend()
+rplot = rplot + length
 
-plt.savefig("test.pdf")
+plt.plot(rplot * np.sin(thplot), -rplot * np.cos(thplot))
+plt.xlabel('X Distance (m)')
+plt.ylabel('Y Distance (m)')
+
+plt.savefig("motion_plot.pdf")
 
