@@ -27,6 +27,7 @@
           matplotlib
 	  sympy
 	  gmpy2
+          tqdm
         '';
       });
     };
