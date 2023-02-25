@@ -1,83 +1,118 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from functools import partial
 from tqdm import tqdm
 import sys
 
 from nm4p.rk4 import rk4
 from nm4p.rka import rka
 
-
-# Define gravrk function used by the Runge-Kutta routines
-def gravrk(s, t, gkml_array):
-    """
-    Returns the right-hand side of the Kepler ODE; used by Runge-Kutta routines
-    :param s: State vector [r(0), r(1), v(0), v(1)]
-    :param t: Time (not used here, included to match derivsRK input)
-    :param GM: Parameter G*M - gravitational constant * solar mass Units [AU^3/yr^2]
-    :return: deriv: Derivatives [dr(0/dt), dr(1)/dt, dv(0)/dt, dv(1)/dt]
-    """
+def pendul(s, t, gkml_array):
+    # Unpack the gravity, spring constant, mass and length array
     g, k, m, l = gkml_array
 
-    # Compute acceleration
-    r = s[:2]  # Unravel the vector s into position and velocity
-    v = s[2:]
+    # Unpack the state
+    r, v = s[:2], s[2:]
+
+    # Find the acceleration vector of the bob based on the acceleration formula
+    # derived from the lagrangian
     accel = [((r[0] + l) * (v[1] ** 2)) - ((k * r[0]) / m) + (g * np.cos(r[1])), 
              ((-g * np.sin(r[1])) / (l + r[0])) - ((2 * v[0] * v[1]) / (l + r[0]))]
 
-    # Return derivatives
+    # return the derivatives of the state vector
     deriv = np.array([v[0], v[1], accel[0], accel[1]])
-
     return deriv
 
-mass = 1  # Mass of pendulum bob
-grav = 9.81
-spring = 1000 # Strength of the spring
+def animate_pendulum(i, x_vals, y_vals, rod, bob):
+    # Generic animation function for a pendulum, can be
+    # used with functools partial to be used in the animation
+    # class from matplotlib
+    x, y = x_vals[i], y_vals[i]
+    rod.set_data([0, x], [0, y])
+    bob.set_center((x, y))
+    return()
+
+data_dir = "./output/HW_4"
+
+# These constants set the natural scales of measurement for the
+# motion of the pendulum
+grav = 9.81 # Strength of gravitational constant
+mass = .1  # Mass of pendulum bob
 length = 1 # Resting length of the pendulum
 adaptErr = 1.0E-3  # Error parameter used by adaptive Runge-Kutta
 time = 0.0
 
-theta0 = eval(sys.argv[1])
-total_time = eval(sys.argv[2]) # in sec
-tau = eval(sys.argv[3])
+# Input the initial parameters of the module
+theta0 = eval(input("Initial Pendulum Angle (deg): "))
+spring = eval(input("Spring Constant (N/m): "))
+tau = eval(input("Starting Time Step: "))
+nStep = eval(input("Number of Total Steps: "))
 
-nStep = int(total_time // tau)
+# Animation decision
+to_animate = eval(input("Would you like to produce an animation (1(yes)/0(no)): "))
+if to_animate == 1:
+    animation_speed = eval(input("Animation Speed (spacing between frames is dt * animation_speed): "))
 
-r = np.array([0, theta0 * np.pi / 180])
-v = np.array([0.0, 0.0])
-
-state = np.array([r[0], r[1], v[0], v[1]])  # State used by R-K routines
+# Declare the initial state based on the input angle
+state = np.array([0, theta0 * np.pi / 180, 0, 0])
 
 rplot = np.empty(nStep)
 thplot = np.empty(nStep)
 tplot = np.empty(nStep)
+tauplot = np.empty(nStep)
 
+# Run the Runga Kutta Simulation
 for iStep in tqdm(range(nStep)):
-
-    # Record position and energy for plotting
-    rplot[iStep] = r[0]  # Record radial position and angle for polar plot
-    thplot[iStep] = r[1]
+    rplot[iStep] = state[0]
+    thplot[iStep] = state[1]
     tplot[iStep] = time
+    tauplot[iStep] = tau
+    # Update the state, time and time step based on the adaptive runga kutta method
+    state, time, tau = rka(state, time, tau, adaptErr, pendul, [grav, spring, mass, length])
 
-    # Calculate new position and velocity using the adaptive Runga-Kutta
-    #state = rk4(state, time, tau, gravrk, [grav, spring, mass, length])
-    state, time, tau = rka(state, time, tau, adaptErr, gravrk, [grav, spring, mass, length])
-    r = state[:2]  # 4th Order Runge-Kutta
-    v = state[2:]
-
-plt.plot(tplot, rplot, label = "Radius")
-plt.plot(tplot, thplot, label = "Angle")
-plt.ylabel('Angle (rad) and Radius (m)')
-plt.xlabel('Time')
-plt.legend()
-
-plt.savefig("tt_plot.pdf")
-plt.close()
-
+# Update the radial plot length to account for the resting length of the pendulum
+# then split it into x and y components
 rplot = rplot + length
+xplot = rplot * np.sin(thplot)
+yplot = -rplot * np.cos(thplot)
 
-plt.plot(rplot * np.sin(thplot), -rplot * np.cos(thplot))
+# Plot the x and y motion plot of the pendulum
+plt.plot(xplot, yplot)
 plt.xlabel('X Distance (m)')
 plt.ylabel('Y Distance (m)')
+plt.savefig(f"{data_dir}/motion_plot_{spring}_{theta0}.pdf")
 
-plt.savefig("motion_plot.pdf")
+print(f"Average time step for k = {spring} N/m is {np.mean(tauplot):.2e} sec")
 
+# Optional animation of the springy pendulum
+if to_animate == 1:
+    # Initialize the figure with specific size and dpi
+    # Initialize the general variables for the plot
+    plot_size_x, plot_size_y, dpi, frames_per_sec = (4, 4, 200, 20)
+    circle_radius, line_width = (0.08, 3)
+    max_x, max_y = (max(xplot) * 2, -min(yplot) * 1.2)
+
+    # Initialize the figure with set size, x and y limits
+    fig = plt.figure()
+    fig.set_size_inches(plot_size_x, plot_size_y, True)
+    ax = fig.add_subplot(aspect = 'equal')
+    ax.set_xlim(-max_x, max_x)
+    ax.set_ylim(-max_y, 0)
+
+    # Initialize the rod and bob with the starting values
+    x0, y0 = xplot[0], yplot[0]
+    line, = ax.plot([0, x0], [0, y0], lw=line_width, c='k')
+    circle = ax.add_patch(plt.Circle((x0, y0), circle_radius, fc='r', zorder=3))
+
+    # Define the animation function for this specific context
+    animate = partial(animate_pendulum, x_vals = xplot, y_vals = yplot, rod = line, bob = circle)
+    # Declare the interval between frames based on the average spacing between
+    # points in the plot lists
+    interval = np.mean(tauplot) * animation_speed
+    # Animate the figure!
+    pendulum_animation = animation.FuncAnimation(fig, animate, frames = nStep, interval = interval)
+    # Save the animation to a file
+    video_writer = animation.FFMpegWriter(fps = frames_per_sec)
+    pendulum_animation.save(f"{data_dir}/pendulum_{spring}_{theta0}.mp4", writer = video_writer, dpi = dpi)
+    plt.close()
