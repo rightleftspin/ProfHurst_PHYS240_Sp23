@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from functools import partial
 from tqdm import tqdm
-import sys
+import sys, os
 
 from nm4p.rk4 import rk4
 from nm4p.rka import rka
@@ -77,8 +77,14 @@ rplot = rplot + length
 xplot = rplot * np.sin(thplot)
 yplot = -rplot * np.cos(thplot)
 
+# Creating the output directory
+os.makedirs(data_dir, exist_ok=True)
+print(f"Output is in {data_dir}")
+
 # Plot the x and y motion plot of the pendulum
 plt.plot(xplot, yplot)
+plt.suptitle("Motion Plot of Springy Pendulum")
+plt.title(f"k = {spring} N/m, Theta_0 = {theta0}, Mean dt = {np.mean(tauplot):.2e} sec", fontsize = 8)
 plt.xlabel('X Distance (m)')
 plt.ylabel('Y Distance (m)')
 plt.savefig(f"{data_dir}/motion_plot_{spring}_{theta0}.pdf")
