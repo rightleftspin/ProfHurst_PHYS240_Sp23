@@ -5,28 +5,28 @@
       flake = false;
     };
     mach-nix = {
-	url = "mach-nix/3.5.0";
-	inputs.pypi-deps-db.follows = "pypi-deps-db"; 
+      url = "mach-nix/3.5.0";
+      inputs.pypi-deps-db.follows = "pypi-deps-db";
     };
   };
 
   outputs = {self, nixpkgs, mach-nix, pypi-deps-db }@inp:
     let
+
       l = nixpkgs.lib // builtins;
       supportedSystems = [ "x86_64-linux" "aarch64-darwin" ];
-      forAllSystems = f: l.genAttrs supportedSystems
-        (system: f system (import nixpkgs {inherit system;}));
-	 
+      forAllSystems = f: l.genAttrs supportedSystems (system: f system (import nixpkgs {inherit system;}));
+
     in
     {
-      # enter this python environment by executing `nix shell .`
       devShell = forAllSystems (system: pkgs: mach-nix.lib."${system}".mkPythonShell {
         requirements = ''
           numpy
-	  scipy
+          scipy
           matplotlib
-	  sympy
-	  gmpy2
+          sympy
+          gmpy2
+          tqdm
         '';
       });
     };
