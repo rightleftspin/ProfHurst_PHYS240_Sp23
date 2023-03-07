@@ -19,13 +19,15 @@ def finput(input_text) :
 N = dinput('Enter the total number of data points: ')
 freq = finput('Enter the frequency of the sine wave: ')
 phase = np.pi * finput('Enter phase of the sine wave (in units of pi): ')
+
+# Generate the data for the time series
 dt = 1   # Time increment
 t = np.arange(N)*dt               # t = [0, dt, 2*dt, ... ], note t = j here compared to Garcia
 y = np.sin(2*np.pi*t*freq + phase)   # Sine wave time series
 fk = np.arange(N)/(N*dt)           # f = [0, 1/(N*dt), ... ], k index
 
 
-# lets use a finely sampled function, for plotting purposes:
+# Lets use a finely sampled function to compare to the data, for plotting purposes:
 tmod = np.linspace(0,t[-1],1024)
 ymod = np.sin(2*np.pi*tmod*freq + phase)
 
@@ -57,11 +59,12 @@ plt.rcParams.update({'font.size': 20})  # set bigger default font size for plots
 fig1, ax1 = plt.subplots(nrows=1, ncols=2, figsize=(15,7))
 #* Graph the time series and its transform
 # Left subplot: time axis
-ax1[0].plot(t,y,'o')
-ax1[0].plot(tmod,ymod,'--',c='C2')
+ax1[0].plot(t,y,'o', label='Input data')
+ax1[0].plot(tmod,ymod,'--',c='C2', label='Sin function')
 ax1[0].set_title('Original time series: ' + text_vals,fontsize=22)
 ax1[0].set_xlabel('Time')
 ax1[0].set_ylabel('$y(t)$')
+ax1[0].legend(frameon=True)
 ax1[0].tick_params('both', length=8, width=1.2, which='major') # bigger axis ticks
 
 # Right subplot: fourier transform
