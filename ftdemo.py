@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     plt.tight_layout()
 
-    save = True
+    save = False # Set this flag to true if you want to save the plots.
     if save:
         today = str(datetime.date.today())
         fig_directory = os.path.expanduser('~/figs_out/' + today)
