@@ -33,7 +33,7 @@ def poly(x, **params):
 
 if __name__ == '__main__':
 
-    # initialize the data to be fit. Data id quadratic plus some random numbers.
+    # Initialize the data to be fit. This data is a quadratic plus some random numbers.
     print('Data for curve fit is created using a polynomial function of your choice: y(x) = c(0) + c(1)x + c(2)x**2 + ... c(n)**n: ')
     c = np.array(eval(input('Enter the data coefficients as list [c(0), c(1), c(2)... c(n-1)]: ')))
     N = 20  # Number of data points
