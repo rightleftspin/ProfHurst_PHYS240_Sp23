@@ -4,9 +4,14 @@ import matplotlib.animation as animation
 from tqdm import tqdm
 from numdifftools import Derivative
 import sys, os
+from functools import partial
 
 from nm4p.rk4 import rk4
 from nm4p.rka import rka
+
+print("Please note that ffmpeg is a required dependency of the animation, it will error out and not produce animations if ffmpeg is not installed")
+# If you want to run this code without animating, set the following flag to false
+animate = True
 
 mH = 1.00794 #Da
 
@@ -120,7 +125,8 @@ nStep = 50
 # hydrogen bond, and the extra hydrogen particle starts at 2 au away
 # initial momentum can be added but all these variables need to be 
 # finely tuned to keep the system from "exploding"
-state = np.array([Re, 2, 0, 0])
+initial_vel = int(sys.argv[1])
+state = np.array([Re, 2, initial_vel, 0])
 
 # Initialize the empty radius arrays and time array
 r1plot = np.empty(nStep)
@@ -143,39 +149,41 @@ print(f"Output is in {data_dir}")
 # this is canonically used to check for reactivity
 # in the system
 plt.plot(r1plot, r2plot)
-plt.title("R1 vs R2 for H+H+H")
-plt.xlabel('R1 Distance')
-plt.ylabel('R2 Distance')
-plt.savefig(f"{data_dir}/r1vr2.pdf")
+plt.suptitle("R1 vs R2 for H+H+H")
+plt.title(f"Initial Velocity {initial_vel}au/fs ")
+plt.xlabel('R1 Distance (au)')
+plt.ylabel('R2 Distance (au)')
+plt.savefig(f"{data_dir}/r1vr2_{initial_vel}.pdf")
 
-# The rest of this is animation related code
-# Initialize the figure with specific size and dpi
-# Initialize the general variables for the plot
-plot_size_x, plot_size_y, dpi, frames_per_sec = (4, 4, 200, 20)
-circle_radius = 0.08
+if animate:
+    # The rest of this is animation related code
+    # Initialize the figure with specific size and dpi
+    # Initialize the general variables for the plot
+    plot_size_x, plot_size_y, dpi, frames_per_sec = (4, 4, 200, 20)
+    circle_radius = 0.08
 
-# Initialize the figure with set size, x and y limits
-fig = plt.figure()
-fig.set_size_inches(plot_size_x, plot_size_y, True)
-ax = fig.add_subplot(aspect = 'equal')
-ax.set_xlim(-0.5, 7)
-ax.set_ylim(-1, 1)
-
-x1, y1 = 0, 0
-circle1 = ax.add_patch(plt.Circle((x1, y1), circle_radius, fc='r', zorder=3))
-x2, y2 = r1plot[0], 0
-circle2 = ax.add_patch(plt.Circle((x2, y2), circle_radius, fc='r', zorder=3))
-x3, y3 = r2plot[0], 0
-circle3 = ax.add_patch(plt.Circle((x3, y3), circle_radius, fc='b', zorder=3))
-
-# Define the animation function for this specific context
-animate = partial(animate_hsystem, r1_vals = r1plot, r2_vals = r2plot, h1 = circle1, h2 = circle2, h3 = circle3)
-# Declare the interval between frames based on the average spacing between
-# points in the plot lists
-interval = tau * 1000
-# Animate the figure!
-pendulum_animation = animation.FuncAnimation(fig, animate, frames = nStep, interval = interval)
-# Save the animation to a file
-video_writer = animation.FFMpegWriter(fps = frames_per_sec)
-pendulum_animation.save(f"{data_dir}/hhh.mp4", writer = video_writer, dpi = dpi)
-plt.close()
+    # Initialize the figure with set size, x and y limits
+    fig = plt.figure()
+    fig.set_size_inches(plot_size_x, plot_size_y, True)
+    ax = fig.add_subplot(aspect = 'equal')
+    ax.set_xlim(-0.5, 7)
+    ax.set_ylim(-1, 1)
+    
+    x1, y1 = 0, 0
+    circle1 = ax.add_patch(plt.Circle((x1, y1), circle_radius, fc='r', zorder=3))
+    x2, y2 = r1plot[0], 0
+    circle2 = ax.add_patch(plt.Circle((x2, y2), circle_radius, fc='r', zorder=3))
+    x3, y3 = r2plot[0], 0
+    circle3 = ax.add_patch(plt.Circle((x3, y3), circle_radius, fc='b', zorder=3))
+    
+    # Define the animation function for this specific context
+    animate = partial(animate_hsystem, r1_vals = r1plot, r2_vals = r2plot, h1 = circle1, h2 = circle2, h3 = circle3)
+    # Declare the interval between frames based on the average spacing between
+    # points in the plot lists
+    interval = tau * 1000
+    # Animate the figure!
+    pendulum_animation = animation.FuncAnimation(fig, animate, frames = nStep, interval = interval)
+    # Save the animation to a file
+    video_writer = animation.FFMpegWriter(fps = frames_per_sec)
+    pendulum_animation.save(f"{data_dir}/hhh_{initial_vel}.mp4", writer = video_writer, dpi = dpi)
+    plt.close()
