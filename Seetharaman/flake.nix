@@ -27,6 +27,9 @@
           sympy
           gmpy2
           tqdm
+	  numba
+	  numdifftools
+	  lmfit
         '';
       });
     };
