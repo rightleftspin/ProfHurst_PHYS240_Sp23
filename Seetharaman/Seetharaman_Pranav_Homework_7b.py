@@ -1,9 +1,10 @@
 import numpy as np
 import scipy.linalg as sl
+import time
 from numba import jit, njit
 
 # Using numba to compile and speed up the code
-@jit
+@njit
 def generate_circuit_system(size, high_voltage):
     """
     Takes the circuit system size (number of different voltages)
@@ -58,10 +59,9 @@ if __name__ == "__main__":
     v_plus = 5 #High Voltage
     
     print(f"Voltages = {find_voltages(system_size, v_plus)[0]}")
-    
     # Try this for every circuit size until the computer can't handle it
     # Set to False on default to not destroy computers
-    loop_till_failed = False
+    loop_till_failed = True
     # Current maximum reached is about 30,000,000, didn't fail, but
     # I had to use my computer for something else
     while loop_till_failed:
