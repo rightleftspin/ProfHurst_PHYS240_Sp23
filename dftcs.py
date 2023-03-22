@@ -16,6 +16,8 @@ h = L/(N-1)  # Grid size dx
 kappa = 1.0  # Diffusion coefficient
 coeff = kappa*tau/h**2
 
+print('Natural time scale: {0:.2e}'.format(h**2/(2*kappa)))
+
 if coeff < 0.5:
     print('Solution is expected to be stable.')
 else:
@@ -44,7 +46,7 @@ for istep in range(nstep):
     # Note that the endpoints (boundary) is not updated.
     tt[1:N-1] = tt[1:N-1] + coeff*(tt[2:N] + tt[0:N-2] - 2*tt[1:N-1])
 
-    # Periodically recod temperature for plotting.
+    # Periodically record temperature for plotting.
     if (istep + 1) % plot_step < 1:  # record data for plot every plot_step number of steps. Don't record first step.
         ttplot[:, iplot] = np.copy(tt)  # record a copy of tt(i) for plotting
         tplot[iplot] = (istep+1)*tau  # record time for plots
@@ -68,5 +70,16 @@ ax2.clabel(ct, fmt='%1.2f')
 ax2.set_xlabel('Time')
 ax2.set_ylabel('x')
 ax2.set_title('Temperature contour plot')
+
+# Plot 1D slices of the temperature distribution vs. space at short and long times
+fig3, ax3 =plt.subplots()
+ax3.set_title(r'Bar temperature profile at $\Delta t = {0:.2e}t_a$'.format(tau))
+ax3.plot(xplot, ttplot[:, 1], label='{0:.2e}'.format(tplot[1]))
+ax3.plot(xplot, ttplot[:, 10], label='{0:.2e}'.format(tplot[10]))
+ax3.plot(xplot, ttplot[:, 25], label='{0:.2e}'.format(tplot[25]))
+ax3.plot(xplot, ttplot[:, -1], label='{0:.2e}'.format(tplot[-1]))
+ax3.legend(title=r'$t$')
+ax3.set_xlabel(r'$x$')
+ax3.set_ylabel(r'$T(x, t)$')
 
 plt.show()
