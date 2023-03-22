@@ -15,6 +15,7 @@ L = 1.0  # The system extends from x = -L/2 to L/2
 h = L/(N-1)  # Grid size dx
 kappa = 1.0  # Diffusion coefficient
 coeff = kappa*tau/h**2
+t_natural = h**2/(2*kappa)
 
 print('Natural time scale: {0:.2e}'.format(h**2/(2*kappa)))
 
@@ -73,7 +74,7 @@ ax2.set_title('Temperature contour plot')
 
 # Plot 1D slices of the temperature distribution vs. space at short and long times
 fig3, ax3 =plt.subplots()
-ax3.set_title(r'Bar temperature profile at $\Delta t = {0:.2e}t_a$'.format(tau))
+ax3.set_title(r'Bar temperature profile at $\Delta t = {0:.2e}t_a$'.format(tau/t_natural))
 ax3.plot(xplot, ttplot[:, 1], label='{0:.2e}'.format(tplot[1]))
 ax3.plot(xplot, ttplot[:, 10], label='{0:.2e}'.format(tplot[10]))
 ax3.plot(xplot, ttplot[:, 25], label='{0:.2e}'.format(tplot[25]))
