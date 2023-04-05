@@ -14,14 +14,26 @@ L = 1.0  # System size
 h = L/N  # Grid spacing
 c = 1.0  # Wave speed
 
-print('Time for wave to move one grid spacing is {0:.2f}'.format(h/c))
+# Set up plot titles
+if method == 1:  ### FTCS Method ###
+    plotlabel = 'FTCS'
+elif method == 2:  ### Lax Method ###
+    plotlabel = 'Lax'
+elif method == 3:  ### Lax-Wendroff Method  ###
+    plotlabel = 'Lax-Wendroff'
+else:
+    raise ValueError('Incorrect index chosen for method. Must choose 1, 2, or 3')
 
-tau = eval(input('Enter time step: '))
+print('Time for wave to move one grid spacing (Courant timestep tc) = {0:.2f}'.format(h/c))
+
+tc = h/c
+tau = float(input('Enter time step as a fraction of tc: '))
+tau *= tc
 coeff = -c*tau/(2.0*h)  # Coefficient used by all schemes
 coefflw = 2*coeff**2  # Coefficient used by L-W scheme
 
 print('Wave circles the system in {0:.2f} steps'.format(L/(c*tau)))
-nStep = eval(input('Enter total number of steps: '))
+nStep = int(input('Enter total number of steps: '))
 
 # Set initial and boundary conditions
 sigma = 0.1  # Width of the Gaussian pulses
@@ -70,6 +82,7 @@ for iStep in range(nStep):  ## MAIN LOOP ##
 
 # Plot the initial and final states.
 fig, ax = plt.subplots()
+ax.set_title(r'Advection of wave pulse: ' + plotlabel + ', $\Delta t/t_c = $ {0:.2f}'.format(tau/tc))
 ax.plot(x, aplot[:, 0], '-', label='Initial')
 ax.plot(x, a, '--', label='Final')
 ax.set_xlabel('x')
@@ -79,8 +92,9 @@ ax.legend()
 # Plot the total wave amplitude versus position and time
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(projection='3d')
+ax2.set_title(r'Advection of wave pulse: ' + plotlabel + ', $\Delta t/t_c = $ {0:.2f}'.format(tau/tc))
 Tp, Xp = np.meshgrid(tplot[0:iplot], x)  # Arrange data into a format suitable for 3D plots.
-ax2.plot_surface(Tp, Xp, aplot[:, 0:iplot], rstride=1, cstride=1, cmap=cm.plasma)
+ax2.plot_surface(Tp, Xp, aplot[:, 0:iplot], rstride=1, cstride=1, cmap=cm.viridis)
 ax2.view_init(elev=30., azim=-140.)
 ax2.set_ylabel('Position')
 ax2.set_xlabel('Time')
