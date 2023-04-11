@@ -52,7 +52,7 @@ ax.plot(x, np.real(psi), ls='-', label='Real')
 ax.plot(x, np.imag(psi), ls='--', label='Imag')
 ax.set_xlabel('x')
 ax.set_ylabel(r'$\psi(x)$')
-ax.set_title('Initial Wavefunction')
+ax.set_title(r'Initial Wavefunction, N = {0:d}, $\Delta t = ${1:.2f}'.format(N, dt))
 ax.legend()
 
 # plt.show()
@@ -70,25 +70,31 @@ for iter in range(max_iter):
     # Compute new wavefunction using the Crank-Nicoloson method
     psi = np.dot(dCN, psi)
 
+    # Normalize after every time step to help with truncation errors.
+    norm = dx*np.sum(np.abs(psi)**2)
+    psi = psi/np.sqrt(norm)
+
     # Periodically record values for plotting
     if (iter+1) % plot_iter < 1:
         iplot += 1
         p_plot[:, iplot] = np.abs(psi)**2
+        norm_check = dx*np.sum(np.abs(psi)**2)  # This should always be one. If it's not, you have a bug.
         print(('Finished {0:d} of {1:d} iterations.'.format(iter, max_iter)))
+        print('WF Norm: {0:.2f}'.format(norm_check))
 
 # Plot probability vs. position at various times.
 pFinal = np.abs(psi)**2
 
 fig2, ax2 = plt.subplots()
-# ax2.plot(x, p_plot)
-for m in range(iplot+1):
+ax2.plot(x, p_plot[:, 0], ls=':', color='black', linewidth=1.75, label='Initial')
+for m in range(1, iplot+1):
    ax2.plot(x, p_plot[:, m], label='_nolegend_')  # No legend labels for all the intermediate time plots
-ax2.plot(x, pFinal, ls='--', color='k', linewidth=1.5, label='Final')
+ax2.plot(x, pFinal, ls='--', color='k', linewidth=1.75, label='Final')
 ax2.set_xlabel('x')
 ax2.set_ylabel('P(x,t)')
 ax2.set_xlim(-L/2.0, L/2.0)
 ax2.set_ylim(0.0, 1.1*max(p_plot[:, 0]))
-ax2.set_title('Probability density at various times.')
+ax2.set_title('Probability density at various times. N = {0:d}, $\Delta t = ${1:.2f}'.format(N, dt))
 ax2.legend()
 
 plt.show()
