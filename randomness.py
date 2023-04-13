@@ -10,7 +10,7 @@ np.random.seed(seed_in)
 x = np.random.rand(num_samples)
 
 fig, ax = plt.subplots()
-ax.hist(x, alpha=0.5, ec='C0', lw=2)
+ax.hist(x, alpha=0.75, edgecolor='black', linewidth=2)
 ax.set_xlabel('x')
 ax.set_ylabel('N(x)')
 
