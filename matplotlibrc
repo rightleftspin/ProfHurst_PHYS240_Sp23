@@ -1,0 +1,29 @@
+figure.titlesize: 20
+figure.figsize : 3.3 , 6.6
+axes.titlesize : 18
+axes.labelsize : 14
+xtick.labelsize : 14
+ytick.labelsize : 14
+legend.fontsize : 14
+legend.title_fontsize : 14
+
+axes.linewidth : 0.75
+
+lines.linewidth : 1.0
+lines.markersize : 3.0
+lines.markeredgewidth : 0.5
+
+xtick.major.size : 8
+xtick.minor.size : 7
+xtick.major.width : 1.2
+xtick.minor.width : 1.2
+xtick.direction : in
+
+ytick.major.size : 8
+ytick.minor.size : 7
+ytick.major.width : 1.2
+ytick.minor.width : 1.2
+ytick.direction : in
+
+savefig.bbox : tight
+savefig.pad_inches : 0.0
