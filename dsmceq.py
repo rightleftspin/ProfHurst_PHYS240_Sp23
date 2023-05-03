@@ -105,7 +105,7 @@ ax1[1].quiver(x/1e-6, np.random.random(npart)*L/1e-6,v[:,0],v[:,1],scale_units='
 ax1[1].set_xlabel('$x$ (micron)')
 ax1[1].set_ylabel('$y$ (micron)')
 
-#* Plot the initial speed distribution
+# Plot the initial speed distribution
 fig3, ax3 = plt.subplots(figsize=(8,6))
 vmag = np.linalg.norm(v, axis=1)  # find the magnitude of the velocity.
 ax3.hist(vmag, bins=20, range=(0,1000))
@@ -124,10 +124,10 @@ selxtra = np.zeros(ncell)          # Used by routine "collider"
 coeff = 0.5*eff_num*np.pi*diam**2*dt/(L**3/ncell)
 coltot = 0                      # Count total collisions
 
-#* Declare sortList object for lists used in sorting
+# Declare sortList object for lists - used in sorting
 sortData = sortList(ncell, npart)
 
-############# MAIN LOOP ############################
+############# MAIN LOOP ##################################
 # * Loop for the desired number of time steps
 nstep = dinput('Enter total number of time steps: ')
 
