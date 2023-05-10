@@ -38,7 +38,7 @@ class sampList:
         self.ave_T = np.zeros(ncell_in)
 
 
-def sorter(x,L,sD) :
+def sorter(x, L, sD) :
     """sorter - Function to sort particles into cells
        Inputs
          x       Positions of particles
