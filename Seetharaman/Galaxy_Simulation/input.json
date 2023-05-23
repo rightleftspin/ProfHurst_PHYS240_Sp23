@@ -1,0 +1,19 @@
+{
+    "__comment": "The input information in here is in units of kpc, solar masses and Myrs.",
+    "animate": true,
+    "data_dir": "./output",
+    "Maximum Time": 1000, 
+    "Time Step": 1,
+    "Error Tolerance": 1e-3,
+    "Method": "rk4",
+    "Dimension": 3,
+    "G": 5.72023e-12,
+    "Star Mass (M_solar)": 0,
+    "Galactic Mass (M_solar)": [1e12, 1e12],
+    "Number Galaxies": 2,
+    "Galaxy Offsets": [[-40, -70, 0], [40, 70, 0]],
+    "Galaxy Start Velocity": [[0, 0.6, 0], [0, -0.6, 0]],
+    "Galaxy Angles": [[0, 0, 0], [0, 0, 0]],
+    "Star Rings": [9, 11, 13, 15],
+    "Galactic Radius": 28
+ }

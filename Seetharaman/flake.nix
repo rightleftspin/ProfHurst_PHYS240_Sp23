@@ -30,6 +30,7 @@
 	  numba
 	  numdifftools
 	  lmfit
+    celluloid
         '';
       });
     };
