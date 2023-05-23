@@ -1,5 +1,6 @@
-import sys, os, time, json
+import sys, os, time, json, lmfit
 import numpy as np
+import sympy as sy
 import scipy.linalg as spl
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -11,6 +12,12 @@ from nm4p.rka import rka
 
 # Grab constants from the input json file, makes this code easier to read
 constants = json.load(open(sys.argv[1]))
+# The constants needed are listed in the json file, which is reasonably self documenting
+# to run this code, use
+# python Seetharaman_Pranav_Final_Project.py input.json
+# It will simulate a basic galactic interaction. Feel free to change
+# the input parameters as needed to find different types of
+# galactic interactions. It should be decently user friendly.
 
 # Calculated Constants Based on the constants in the input file
 constants["Step Range"] = np.arange(0, constants["Maximum Time"] / constants["Time Step"], dtype = int)
@@ -121,6 +128,22 @@ def create_galaxy(constants, mass, pos_offset, vel_offset, angles):
 
     return(state)
 
+def general_fit_function(function_string, x_data, y_data, guess_parameters):
+    """
+    This function takes in a function string to be parsed by Sympy's
+    expression parser and tries to fit the data given along the 'x'
+    independent variables.
+    """
+    # Use sympy's parser to find the expression from the input string
+    parsed_expression = sy.parsing.sympy_parser.parse_expr(function_string)
+    parsed_function = sy.lambdify(list(parsed_expression.free_symbols), parsed_expression)
+
+    # Create a model based on this input string with the independent variable x
+    parsed_lm_model = lmfit.Model(parsed_function, independent_vars = ['x'])
+    # Run the fit of the model to the data starting with the given parameters
+    fit_to_model = parsed_lm_model.fit(data = y_data, x = x_data, **guess_parameters)
+
+    return(fit_to_model, parsed_function)
 
 # Initialize as many galaxies as needed and combine them into a joint state
 states = []
@@ -132,6 +155,31 @@ state = np.concatenate(states, axis = 1)
 state_updater = lambda current_state, current_step: state_updater_full(current_state, current_step, galactic_system, constants)
 # This is where all the calculation is done.
 final_state = reduce(state_updater, constants["Step Range"][:-1], state)
+
+# Creating Theta data from the x and y data, y data goes first for arctan2
+theta_data = np.arctan2(final_state[:, 0], final_state[:, 1])
+r_data = np.sqrt(final_state[:, 1] ** 2 + final_state[:, 0] ** 2)
+
+# Only fitting for one side of the theta data, since fitting both sides
+# causes a lot of problems.
+theta_data = theta_data[theta_data < 0]
+r_data = r_data[:theta_data.size]
+
+# fit to the "linearized version" where the cosine term is removed
+kepler_fit = "c_0 / (1 + (c_1 * x))"
+# Running the fit function
+fit_model, kepler_function = general_fit_function(kepler_fit,
+                                                  np.cos(theta_data),
+                                                  r_data,
+                                                  {"c_0": 18.5, "c_1": 0.9})
+# Uncommenting this will check the model's fitting plot, however
+# this is done later on the main plot of the code.
+#fit_model.plot()
+#plt.title("Fitting Kepler's Laws to Numerical Data")
+#plt.xlabel("theta")
+#plt.ylabel("r (kpc)")
+#plt.savefig(f"{constants['data_dir']}/fitted_data.pdf")
+#plt.clf()
 
 # Plotting algorithm to plot all the points over all time
 positions = np.arange(0, constants["DOF"], 2 * constants["Dimension"])
@@ -153,16 +201,15 @@ ax.plot(final_state[::, (sum(constants["Star Rings"]) + 1) * 6],
         'r',
         label = "Numerical Sol.")
 
-## Plotting the approximate analytical solution, only works for elliptical curves so far.
-#theta = np.linspace(-np.pi, np.pi)
-## These constants are the best fit I could find for these curves. I will attempt
-## curve fitting later.
-#l, e = 18.5, 0.9
-#r = l / (1 + e * np.cos(theta))
-#
-#ax.plot(r * np.sin(theta), r * np.cos(theta), 'b--', label = "Approx. Analytical Sol.")
-#ax.plot(r * np.sin(theta), -r * np.cos(theta), 'r--', label = "Approx. Analytical Sol.")
-#ax.legend()
+# Plotting the approximate analytical solution, only works for elliptical curves so far.
+theta = np.linspace(-np.pi, np.pi)
+# base on the curve fit done earlier
+l, e = fit_model.values["c_0"], fit_model.values["c_1"]
+r = l / (1 + e * np.cos(theta))
+
+ax.plot(r * np.sin(theta), r * np.cos(theta), 'b--', label = "Approx. Analytical Sol.")
+ax.plot(r * np.sin(theta), -r * np.cos(theta), 'r--', label = "Approx. Analytical Sol.")
+ax.legend()
 
 ax.set_aspect("equal")
 ax.set_xlabel("x (Kpc)")
@@ -173,6 +220,8 @@ ax.set_ylim([-100, 100])
 plt.savefig(f"{constants['data_dir']}/galaxy_motion_plot.pdf")
 
 plt.clf()
+
+
 print(f"Output is in {constants['data_dir']}")
 
 def animate_system(i, final_state, positions, plot_obj):
